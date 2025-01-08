@@ -104,7 +104,7 @@
           } else {
             updateStatus("No files found in the specified folder.");
           }
-        }).catch(error => updateStatus(`Error listing files: ${error.error}`));
+        }).catch(error => updateStatus(`Error listing files: ${error.message}`));
       }
 
       function downloadFile(file) {
@@ -115,7 +115,7 @@
           fileId: fileId,
           alt: "media"
         }).then(response => {
-          const blob = new Blob([response.body]);
+          const blob = new Blob([response.body], { type: response.headers['Content-Type'] });
           const link = document.createElement("a");
           link.href = URL.createObjectURL(blob);
           link.download = fileName;
@@ -128,15 +128,13 @@
 
       function initClient() {
         gapi.load("client:auth2", () => {
-          gapi.auth2.init({
-            client_id: CLIENT_ID,
+          gapi.client.init({
+            apiKey: API_KEY,
+            clientId: CLIENT_ID,
             scope: SCOPES
           }).then(() => {
-            gapi.client.setApiKey(API_KEY);
-            gapi.client.load("https://www.googleapis.com/discovery/v1/apis/drive/v3/rest")
-              .then(() => updateStatus("Client initialized. Ready to authenticate."))
-              .catch(error => updateStatus(`Error loading Drive API: ${error.message}`));
-          });
+            updateStatus("Client initialized. Ready to authenticate.");
+          }).catch(error => updateStatus(`Error initializing client: ${error.message}`));
         });
       }
 
